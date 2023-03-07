@@ -1,1 +1,1 @@
-# ChatGPT-Nuxt
+# ChatGPT-Web

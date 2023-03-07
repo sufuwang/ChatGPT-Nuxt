@@ -1,0 +1,12 @@
+body {
+  background-color: gray;
+  margin: 0;
+}
+.App {
+  width: fit-content;
+  height: 100vh;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 14px 22px;
+  background-color: white;
+}
