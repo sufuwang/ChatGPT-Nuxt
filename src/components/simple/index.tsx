@@ -24,7 +24,7 @@ const App = () => {
 		const response = await fetchWithTimeout({
 			request: [
 				// "http://localhost:8000/question",
-				"http://43.134.166.176/question",
+				"http://43.134.166.176:8000/question",
 				{
 					method: "post",
 					headers: {
