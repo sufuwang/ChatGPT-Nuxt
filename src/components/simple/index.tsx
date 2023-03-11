@@ -54,7 +54,7 @@ const App = () => {
 			() => {
 				const newMessage = {
 					question: content,
-					answer: response.choices[0].message.content.replace(/^\n\n/, ""),
+					answer: response[0].message.content.replace(/^\n\n/, ""),
 				};
 				storage.set(newMessage);
 				setMessage(storage.get());
