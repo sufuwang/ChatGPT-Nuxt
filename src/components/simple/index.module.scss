@@ -1,9 +1,18 @@
 .container {
   width: 80vw;
   max-width: 600px;
+  margin: 0 auto;
   .message {
     max-height: calc(100vh - 264px);
     overflow-y: scroll;
     white-space: pre-wrap;
+  }
+}
+@media only screen and (max-width: 600px) {
+  .container {
+    width: 90vw;
+    .message {
+      max-height: 54vh;
+    }
   }
 }
