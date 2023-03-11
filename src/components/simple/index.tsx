@@ -23,8 +23,8 @@ const App = () => {
 		console.info({ secret, question: content });
 		const response = await fetchWithTimeout({
 			request: [
-				"http://localhost:8000/question",
-				// "http://43.134.166.176/question",
+				// "http://localhost:8000/question",
+				"http://43.134.166.176/question",
 				{
 					method: "post",
 					headers: {
