@@ -2,7 +2,8 @@
   width: 80vw;
   max-width: 600px;
   .message {
-    max-height: calc(100vh - 280px);
+    max-height: calc(100vh - 264px);
     overflow-y: scroll;
+    white-space: pre-wrap;
   }
 }

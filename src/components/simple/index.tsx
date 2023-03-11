@@ -1,11 +1,11 @@
-import { Button, Input, Form, Collapse, Spin } from "antd";
 import { useState } from "react";
+import { Button, Input, Form, Collapse, Spin, message as Message } from "antd";
 import { form as storage } from "../../tools/storage";
-import { getResponse, tryCatch } from "../../tools/function";
+import { tryCatch, fetchWithTimeout } from "../../tools/function";
 import styles from "./index.module.scss";
 
 interface FormData {
-	apiKey: string;
+	secret: string;
 	question: string;
 }
 interface ItemData {
@@ -14,31 +14,53 @@ interface ItemData {
 }
 
 const App = () => {
+	const [messageApi, contextHolder] = Message.useMessage();
 	const [message, setMessage] = useState<ItemData[]>(storage.get());
 	const [loading, setLoading] = useState(false);
 
-	const onFinish = async ({ apiKey, question: content }: FormData) => {
+	const onFinish = async ({ secret, question: content }: FormData) => {
 		setLoading(true);
-		const response = await fetch("https://api.openai.com/v1/chat/completions", {
-			method: "post",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${apiKey}`,
+		console.info({ secret, question: content });
+		const response = await fetchWithTimeout({
+			request: [
+				"http://localhost:8000/question",
+				// "http://43.134.166.176/question",
+				{
+					method: "post",
+					headers: {
+						"Content-Type": "application/json;charset=UTF-8",
+						secret,
+					},
+					body: JSON.stringify({
+						model: "gpt-3.5-turbo",
+						messages: [{ role: "user", content }],
+					}),
+				},
+			],
+			onAbort: () => {
+				messageApi.error("接口超时, 请稍后再试");
+				setLoading(false);
 			},
-			body: JSON.stringify({
-				model: "gpt-3.5-turbo",
-				messages: [{ role: "user", content }],
-			}),
+			onFailure: (error) => {
+				messageApi.error(error.toString());
+				setLoading(false);
+			},
 		});
-		const res = await getResponse(response);
+		if (!response) {
+			setLoading(false);
+			return;
+		}
 		tryCatch(
 			() => {
 				const newMessage = {
 					question: content,
-					answer: res.choices[0].message.content,
+					answer: response.choices[0].message.content.replace(/^\n\n/, ""),
 				};
 				storage.set(newMessage);
 				setMessage(storage.get());
+			},
+			(err) => {
+				messageApi.error(err.toString());
 			},
 			() => {
 				setLoading(false);
@@ -48,6 +70,7 @@ const App = () => {
 
 	return (
 		<div className={styles.container}>
+			{contextHolder}
 			<Spin spinning={loading}>
 				<Form
 					name="basic"
@@ -57,8 +80,8 @@ const App = () => {
 					autoComplete="on"
 				>
 					<Form.Item
-						label="API Key"
-						name="apiKey"
+						label="Secret"
+						name="secret"
 						rules={[{ required: true, message: "" }]}
 					>
 						<Input placeholder="这里是你的 Key" />
@@ -70,9 +93,9 @@ const App = () => {
 					>
 						<Input.TextArea rows={4} placeholder="这里是你的问题" />
 					</Form.Item>
-					<Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+					<Form.Item wrapperCol={{ offset: 3 }}>
 						<Button type="primary" htmlType="submit">
-							Submit
+							确认
 						</Button>
 					</Form.Item>
 				</Form>
