@@ -24,7 +24,7 @@ const App = () => {
 		const response = await fetchWithTimeout({
 			request: [
 				// "http://localhost:8000/question",
-				"http://43.134.166.176:8000/question",
+				"http://sufu.site:8000/question",
 				{
 					method: "post",
 					headers: {
@@ -83,6 +83,7 @@ const App = () => {
 						label="Secret"
 						name="secret"
 						rules={[{ required: true, message: "" }]}
+						initialValue={"test"}
 					>
 						<Input placeholder="这里是你的 Key" />
 					</Form.Item>
