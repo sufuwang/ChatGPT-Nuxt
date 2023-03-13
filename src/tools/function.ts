@@ -84,8 +84,11 @@ export const fetchWithTimeout: FetchWithTimeout = ({
  * 数组字符串 => 数组
  * "['a', 'b']" => ['a', 'b']
  */
-export const strToArray = (str: string) => {
-	if (str.startsWith("[") && str.endsWith("]")) {
+export const strToArray = (str: string | Array<string>) => {
+	if (Array.isArray(str)) {
+		return str;
+	}
+	if (typeof str === "string" && str.startsWith("[") && str.endsWith("]")) {
 		return str
 			.replaceAll(/[\[, \]]/g, "")
 			.replaceAll(/["", '']/g, ",")

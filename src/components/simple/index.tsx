@@ -21,7 +21,7 @@ interface FormData {
 interface ItemData {
 	type: ApiKey;
 	question: string;
-	answer: string;
+	answer: string | Array<string>;
 }
 
 const FeatureType: Record<ApiKey, ApiKey> = {

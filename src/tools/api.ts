@@ -28,7 +28,7 @@ const api = {
 			return JSON.stringify(data);
 		},
 		getResult(response: any) {
-			return response.data.map((d: any) => d.url);
+			return response.map((d: any) => d.url);
 		},
 	},
 };
