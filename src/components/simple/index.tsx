@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Button,
 	Input,
@@ -37,6 +37,16 @@ const App = () => {
 	const [contentType, setContentType] = useState("问题");
 	const [textAreaPlaceHolder, setTextAreaPlaceHolder] =
 		useState("在这里输入你想问的问题");
+
+	useEffect(() => {
+		if (formType === FeatureType.image) {
+			messageApi.open({
+				type: "info",
+				content: "尽量使用英文描述，中文搜图效果较差",
+				duration: 2,
+			});
+		}
+	}, [formType]);
 
 	const onValuesChange = (_curChangeData: any, formData: FormData) => {
 		const { type } = formData;
@@ -145,7 +155,7 @@ const App = () => {
 							const data = renderCollapseContent(item);
 							return (
 								<Collapse.Panel header={data.title} key={index}>
-									<p>{data.content}</p>
+									{data.content}
 								</Collapse.Panel>
 							);
 						})}
@@ -162,14 +172,20 @@ const renderCollapseContent = (data: ItemData) => {
 		console.info("urls: ", data, urls);
 		return {
 			title: data.question,
-			content: urls
-				.filter((d) => d.startsWith("https://"))
-				.map((url) => <img key={url} src={url} alt="图片加载失败" />),
+			content: (
+				<div className={styles.contentImages}>
+					{urls
+						.filter((d) => d.startsWith("https://"))
+						.map((url) => (
+							<img key={url} src={url} alt="图片已经失效了, 请重新搜索" />
+						))}
+				</div>
+			),
 		};
 	}
 	return {
 		title: data.question,
-		content: data.answer,
+		content: <div>{data.answer}</div>,
 	};
 };
 

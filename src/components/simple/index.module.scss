@@ -6,6 +6,10 @@
     max-height: calc(100vh - 300px);
     overflow-y: scroll;
     white-space: pre-wrap;
+    .contentImages {
+      display: flex;
+      justify-content: space-around;
+    }
   }
 }
 @media only screen and (max-width: 600px) {
