@@ -1,40 +1,69 @@
 import { useState } from "react";
-import { Button, Input, Form, Collapse, Spin, message as Message } from "antd";
+import {
+	Button,
+	Input,
+	Form,
+	Collapse,
+	Spin,
+	message as Message,
+	Radio,
+} from "antd";
 import { form as storage } from "../../tools/storage";
-import { tryCatch, fetchWithTimeout } from "../../tools/function";
+import { tryCatch, fetchWithTimeout, strToArray } from "../../tools/function";
+import api, { ApiKey } from "../../tools/api";
 import styles from "./index.module.scss";
 
 interface FormData {
+	type: keyof typeof FeatureType;
 	secret: string;
 	question: string;
 }
 interface ItemData {
+	type: ApiKey;
 	question: string;
 	answer: string;
 }
+
+const FeatureType: Record<ApiKey, ApiKey> = {
+	question: "question",
+	image: "image",
+};
 
 const App = () => {
 	const [messageApi, contextHolder] = Message.useMessage();
 	const [message, setMessage] = useState<ItemData[]>(storage.get());
 	const [loading, setLoading] = useState(false);
+	const [formType, setFormType] = useState<ApiKey>(FeatureType.question);
+	const [contentType, setContentType] = useState("问题");
+	const [textAreaPlaceHolder, setTextAreaPlaceHolder] =
+		useState("在这里输入你想问的问题");
+
+	const onValuesChange = (_curChangeData: any, formData: FormData) => {
+		const { type } = formData;
+		setFormType(type);
+		if (type === FeatureType.question) {
+			setContentType("问题");
+			setTextAreaPlaceHolder("在这里输入你想问的问题");
+		} else if (type === FeatureType.image) {
+			setContentType("描述");
+			setTextAreaPlaceHolder("在这里输入你希望获取到的图片的描述");
+		}
+	};
 
 	const onFinish = async ({ secret, question: content }: FormData) => {
 		setLoading(true);
 		console.info({ secret, question: content });
+		const apiInfo = api[formType];
 		const response = await fetchWithTimeout({
 			request: [
-				// "http://localhost:8000/question",
-				"http://sufu.site:8000/question",
+				apiInfo.path,
 				{
 					method: "post",
 					headers: {
 						"Content-Type": "application/json;charset=UTF-8",
 						secret,
 					},
-					body: JSON.stringify({
-						model: "gpt-3.5-turbo",
-						messages: [{ role: "user", content }],
-					}),
+					body: apiInfo.getBody(content),
 				},
 			],
 			onAbort: () => {
@@ -53,8 +82,9 @@ const App = () => {
 		tryCatch(
 			() => {
 				const newMessage = {
+					type: formType,
 					question: content,
-					answer: response[0].message.content.replace(/^\n\n/, ""),
+					answer: apiInfo.getResult(response),
 				};
 				storage.set(newMessage);
 				setMessage(storage.get());
@@ -75,24 +105,31 @@ const App = () => {
 				<Form
 					name="basic"
 					labelCol={{ span: 3 }}
-					initialValues={{ remember: true }}
+					className={styles.form}
+					initialValues={{ type: FeatureType.question, secret: "test" }}
+					onValuesChange={onValuesChange}
 					onFinish={onFinish}
 					autoComplete="on"
 				>
+					<Form.Item label="类型" name="type">
+						<Radio.Group>
+							<Radio.Button value={FeatureType.question}>提问</Radio.Button>
+							<Radio.Button value={FeatureType.image}>搜图</Radio.Button>
+						</Radio.Group>
+					</Form.Item>
 					<Form.Item
 						label="Secret"
 						name="secret"
 						rules={[{ required: true, message: "" }]}
-						initialValue={"test"}
 					>
 						<Input placeholder="这里是你的 Key" />
 					</Form.Item>
 					<Form.Item
-						label="问题"
+						label={contentType}
 						name="question"
 						rules={[{ required: true, message: "" }]}
 					>
-						<Input.TextArea rows={4} placeholder="这里是你的问题" />
+						<Input.TextArea rows={3} placeholder={textAreaPlaceHolder} />
 					</Form.Item>
 					<Form.Item wrapperCol={{ offset: 3 }}>
 						<Button type="primary" htmlType="submit">
@@ -103,17 +140,37 @@ const App = () => {
 			</Spin>
 			<div className={styles.message}>
 				{message.length ? (
-					<Collapse defaultActiveKey={[0]} onChange={console.info}>
-						{message.map((item, index) => (
-							<Collapse.Panel header={item.question} key={index}>
-								<p>{item.answer}</p>
-							</Collapse.Panel>
-						))}
+					<Collapse defaultActiveKey={[0]} onChange={() => null}>
+						{message.map((item, index) => {
+							const data = renderCollapseContent(item);
+							return (
+								<Collapse.Panel header={data.title} key={index}>
+									<p>{data.content}</p>
+								</Collapse.Panel>
+							);
+						})}
 					</Collapse>
 				) : null}
 			</div>
 		</div>
 	);
+};
+
+const renderCollapseContent = (data: ItemData) => {
+	if (data.type === FeatureType.image) {
+		const urls = strToArray(data.answer);
+		console.info("urls: ", data, urls);
+		return {
+			title: data.question,
+			content: urls
+				.filter((d) => d.startsWith("https://"))
+				.map((url) => <img key={url} src={url} alt="图片加载失败" />),
+		};
+	}
+	return {
+		title: data.question,
+		content: data.answer,
+	};
 };
 
 export default App;

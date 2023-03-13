@@ -58,12 +58,11 @@ export const fetchWithTimeout: FetchWithTimeout = ({
 					clearTimeout(id);
 					id = -1;
 				}
-				const res = await getResponse(data);
 				if (![200].includes(data.status)) {
-					onFailure?.(res.errInfo);
+					onFailure?.(data.statusText);
 					return Promise.reject(data);
 				}
-				return res;
+				return getResponse(data);
 			},
 			(error) => {
 				if (abortController.signal.aborted === false) {
@@ -76,7 +75,22 @@ export const fetchWithTimeout: FetchWithTimeout = ({
 				abortController.abort();
 				onAbort?.();
 				resolve(null);
-			}, 30000);
+			}, 300000);
 		}),
 	]);
+};
+
+/**
+ * 数组字符串 => 数组
+ * "['a', 'b']" => ['a', 'b']
+ */
+export const strToArray = (str: string) => {
+	if (str.startsWith("[") && str.endsWith("]")) {
+		return str
+			.replaceAll(/[\[, \]]/g, "")
+			.replaceAll(/["", '']/g, ",")
+			.replaceAll(/[", ']/g, "")
+			.split(",");
+	}
+	return [str];
 };

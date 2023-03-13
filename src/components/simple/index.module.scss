@@ -3,7 +3,7 @@
   max-width: 600px;
   margin: 0 auto;
   .message {
-    max-height: calc(100vh - 264px);
+    max-height: calc(100vh - 300px);
     overflow-y: scroll;
     white-space: pre-wrap;
   }
@@ -11,8 +11,16 @@
 @media only screen and (max-width: 600px) {
   .container {
     width: 90vw;
+    .form {
+      > div {
+        margin-bottom: 8px;
+        &:last-child {
+          margin-bottom: 14px;
+        }
+      }
+    }
     .message {
-      max-height: 54vh;
+      max-height: calc(58vh - 10px);
     }
   }
 }
