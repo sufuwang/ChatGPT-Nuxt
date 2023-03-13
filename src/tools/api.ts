@@ -1,7 +1,7 @@
 import { CreateChatCompletionRequest, CreateImageRequest } from "openai";
 
-const domain = "http://localhost:8000";
-// const domain = "http://sufu.site:8000";
+// const domain = "http://localhost:8000";
+const domain = "http://sufu.site:8000";
 
 const api = {
 	question: {
